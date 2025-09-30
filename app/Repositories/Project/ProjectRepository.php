@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Repositories\Projects;
+namespace App\Repositories\Project;
 
 use App\Models\Project;
-use App\Repositories\Projects\ProjectInterface;
+use App\Repositories\Project\ProjectInterface;
 use Illuminate\Support\Facades\Auth;
 
 class ProjectRepository implements ProjectInterface
@@ -39,6 +39,33 @@ class ProjectRepository implements ProjectInterface
     {
 
         return Project::findOrFail($id); 
+
+    }
+
+    public function update($data, $id)
+    {
+
+        $data = (Object) $data;
+
+        $project = Project::findOrFail($id);
+
+        if(isset($data->name))
+        {
+
+            $project->name = $data->name;
+
+        }
+
+        if(isset($data->description))
+        {
+
+            $project->description = $data->description;
+
+        }
+
+        $project->save();
+
+        return $project;
 
     }
 

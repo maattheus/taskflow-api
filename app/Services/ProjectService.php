@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Repositories\Projects\ProjectRepository;
+use App\Repositories\Project\ProjectRepository;
 
 class ProjectService
 {
@@ -28,6 +28,13 @@ class ProjectService
     {
 
         return $this->projectRepo->getAllByUser();
+
+    }
+
+    public function update($data, $id)
+    {
+
+        return $this->projectRepo->update($data, $id);
 
     }
 

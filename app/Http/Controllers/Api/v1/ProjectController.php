@@ -82,4 +82,33 @@ class ProjectController extends Controller
         }
 
     }
+
+    public function update(Request $request, $id)
+    {
+        try
+        {
+
+            $project = $this->projectService->update($request, $id);
+
+            return responseHandler([
+
+                'message' => 'Project updated successfully',
+                'status'  => 200,
+                'data'    => $project
+
+            ]);
+
+        }catch(\Exception $e)
+        {
+
+            return responseHandler([
+
+                'message' => 'There was an error updating the project',
+                'status'  => 500,
+                'data'    => $e->getMessage()
+
+            ]);  
+
+        }
+    }
 }

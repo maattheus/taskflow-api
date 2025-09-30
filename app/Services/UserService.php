@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Repositories\Users\UserRepository;
+use App\Repositories\User\UserRepository;
 
 class UserService
 {
@@ -28,6 +28,14 @@ class UserService
     {
 
         return $this->userRepo->getUserById($id);
+
+    }
+
+
+    public function update($data, $id)
+    {
+
+        return $this->userRepo->update($data, $id);
 
     }
 

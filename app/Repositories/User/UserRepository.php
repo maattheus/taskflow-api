@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Repositories\Users;
+namespace App\Repositories\User;
 
 use App\Models\User;
 
@@ -20,6 +20,14 @@ class UserRepository implements UserInterface
 
         return User::findOrFail($id); 
 
+    }
+
+
+    public function update($data, $id)
+    {
+        $user = User::findOrFail($id);
+        $user->update($data);
+        return $user;
     }
 
 }

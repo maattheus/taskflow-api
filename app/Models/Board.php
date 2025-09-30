@@ -5,15 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Project extends Model
+class Board extends Model
 {
-
     use HasFactory;
 
     protected $fillable = [
-        'user_id',
         'name',
-        'description',
+        'project_id',
     ];
 
     protected $casts = [
@@ -21,9 +19,8 @@ class Project extends Model
         'updated_at' => 'datetime:Y-m-d H:i:s',
     ];
 
-
-    public function user()
+    public function project()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(Project::class);
     }
 }
