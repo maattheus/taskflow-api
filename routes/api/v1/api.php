@@ -13,39 +13,35 @@ Route::prefix('auth')->group(function () {
 
 });
 
-Route::prefix('user')->group(function () {
+Route::prefix('users')->group(function () {
 
-    Route::post('/store', [UserController::class, 'create']);
+    Route::post('', [UserController::class, 'create']); 
 
     Route::middleware('auth:sanctum')->group(function () {
-
-        Route::get('/{id}', [UserController::class, 'getUserById']);
-        Route::put('/update/{id}', [UserController::class, 'update']);
-
+        Route::get('/{id}', [UserController::class, 'getUserById']); 
+        Route::put('/{id}', [UserController::class, 'update']);      
     });
 
 });
 
+
 Route::middleware('auth:sanctum')->group(function () {
 
-    Route::prefix('project')->group(function () {
+    Route::prefix('projects')->group(function () { 
 
-        Route::get('', [ProjectController::class, 'getAllByUser']);
+        Route::get('', [ProjectController::class, 'getAllByUser']); 
 
         Route::middleware('admin')->group(function () {
-            Route::post('create', [ProjectController::class, 'create']);
-            Route::put('update/{id}', [ProjectController::class, 'update']);
+            Route::post('', [ProjectController::class, 'create']);       
+            Route::put('{id}', [ProjectController::class, 'update']);   
         });
 
     });
 
-
-    Route::prefix('board')->group(function () {
-
+    Route::prefix('boards')->group(function () {
         Route::get('{id}', [BoardController::class, 'getAllByProject']);
-        Route::post('create', [BoardController::class, 'create']);
-        Route::put('update/{id}', [BoardController::class, 'update']);
-        
+        Route::post('', [BoardController::class, 'create']);
+        Route::put('{id}', [BoardController::class, 'update']);
     });
 
 });
