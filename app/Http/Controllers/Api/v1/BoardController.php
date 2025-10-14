@@ -28,7 +28,6 @@ class BoardController extends Controller
                 'status' => 200
 
             ]);
-
         } catch (\Exception $e) {
 
             return responseHandler([
@@ -38,9 +37,7 @@ class BoardController extends Controller
                 'error' => $e->getMessage()
 
             ]);
-
         }
-
     }
 
     public function create(Request $request)
@@ -56,7 +53,6 @@ class BoardController extends Controller
                 'status' => 201
 
             ]);
-
         } catch (\Exception $e) {
 
             return responseHandler([
@@ -66,14 +62,12 @@ class BoardController extends Controller
                 'error' => $e->getMessage()
 
             ]);
-
         }
-
     }
 
     public function update(Request $request, $id)
     {
-        
+
         try {
 
             $board = $this->boardService->update($request, $id);
@@ -85,7 +79,6 @@ class BoardController extends Controller
                 'status' => 200
 
             ]);
-
         } catch (\Exception $e) {
 
             return responseHandler([
@@ -95,9 +88,6 @@ class BoardController extends Controller
                 'error' => $e->getMessage()
 
             ]);
-
         }
-
     }
-
 }

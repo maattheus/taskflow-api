@@ -8,22 +8,18 @@ use Illuminate\Http\Request;
 
 class ProjectController extends Controller
 {
-    
+
     private $projectService;
 
     public function __construct(ProjectService $projectService)
     {
 
         $this->projectService = $projectService;
-
     }
 
     public function create(Request $request)
     {
-
-
-        try
-        {
+        try {
 
             $project = $this->projectService->create($request);
 
@@ -34,9 +30,7 @@ class ProjectController extends Controller
                 'data'    => $project
 
             ]);
-
-        }catch(\Exception $e)
-        {
+        } catch (\Exception $e) {
 
             return responseHandler([
 
@@ -44,19 +38,14 @@ class ProjectController extends Controller
                 'status'  => 500,
                 'data'    => $e->getMessage()
 
-            ]);  
-
+            ]);
         }
-
     }
 
 
     public function getAllByUser(Request $request)
     {
-
-
-        try
-        {
+        try {
 
             $project = $this->projectService->getAllByUser();
 
@@ -67,9 +56,7 @@ class ProjectController extends Controller
                 'data'    => $project
 
             ]);
-
-        }catch(\Exception $e)
-        {
+        } catch (\Exception $e) {
 
             return responseHandler([
 
@@ -77,16 +64,13 @@ class ProjectController extends Controller
                 'status'  => 500,
                 'data'    => $e->getMessage()
 
-            ]);  
-
+            ]);
         }
-
     }
 
     public function update(Request $request, $id)
     {
-        try
-        {
+        try {
 
             $project = $this->projectService->update($request, $id);
 
@@ -97,9 +81,7 @@ class ProjectController extends Controller
                 'data'    => $project
 
             ]);
-
-        }catch(\Exception $e)
-        {
+        } catch (\Exception $e) {
 
             return responseHandler([
 
@@ -107,8 +89,7 @@ class ProjectController extends Controller
                 'status'  => 500,
                 'data'    => $e->getMessage()
 
-            ]);  
-
+            ]);
         }
     }
 }

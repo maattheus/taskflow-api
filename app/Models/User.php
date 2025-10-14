@@ -45,4 +45,19 @@ class User extends Authenticatable
         'created_at' => 'datetime:Y-m-d H:i:s',
         'updated_at' => 'datetime:Y-m-d H:i:s',
     ];
+
+    public function projects()
+    {
+        return $this->hasMany(Project::class);
+    }
+
+    public function tasksCreated()
+    {
+        return $this->hasMany(Task::class, 'created_by');
+    }
+
+    public function tasksAssigned()
+    {
+        return $this->hasMany(Task::class, 'assigned_to');
+    }
 }

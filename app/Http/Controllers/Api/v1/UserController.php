@@ -13,21 +13,19 @@ use Laravel\Sanctum\HasApiTokens;
 class UserController extends Controller
 {
 
-     use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable;
     private $userService;
 
     public function __construct(UserService $userService)
     {
 
         $this->userService = $userService;
-
     }
 
     public function create(CreateUserRequest $request)
     {
 
-        try
-        {
+        try {
 
             $data = $request->validated();
 
@@ -40,9 +38,7 @@ class UserController extends Controller
                 'data'    => $user
 
             ]);
-
-        }catch(\Exception $e)
-        {
+        } catch (\Exception $e) {
 
             return responseHandler([
 
@@ -50,18 +46,15 @@ class UserController extends Controller
                 'status'  => 500,
                 'data'    => $e->getMessage()
 
-            ]);  
-
+            ]);
         }
-
     }
 
 
     public function update(Request $request, $id)
     {
 
-        try
-        {
+        try {
 
             $user = $this->userService->update($request->all(), $id);
 
@@ -72,9 +65,7 @@ class UserController extends Controller
                 'data'    => $user
 
             ]);
-
-        }catch(\Exception $e)
-        {
+        } catch (\Exception $e) {
 
             return responseHandler([
 
@@ -82,18 +73,15 @@ class UserController extends Controller
                 'status'  => 500,
                 'data'    => $e->getMessage()
 
-            ]);  
-
+            ]);
         }
-
     }
 
 
     public function getUserById($id)
     {
 
-        try
-        {
+        try {
 
             $user = $this->userService->getUserById($id);
 
@@ -102,16 +90,13 @@ class UserController extends Controller
                 'status'  => 200,
                 'data'    => $user
             ]);
-
-        }catch(\Exception $e)
-        {
+        } catch (\Exception $e) {
 
             return responseHandler([
                 'message' => 'There was an error fetching the user',
                 'status'  => 500,
                 'data'    => $e->getMessage()
             ]);
-
         }
     }
 }

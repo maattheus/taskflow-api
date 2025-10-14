@@ -12,10 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('projects', function (Blueprint $table) {
-            $table->id(); // id como PK
-            $table->foreignId('user_id') // FK para users
-                  ->constrained('users') // referência a tabela users
-                  ->onDelete('cascade');  // se o usuário for deletado, o projeto também
+            $table->id();
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade'); // dono do projeto
             $table->string('name');
             $table->text('description')->nullable();
             $table->timestamps();

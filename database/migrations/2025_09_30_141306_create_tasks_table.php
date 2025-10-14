@@ -14,14 +14,11 @@ return new class extends Migration {
             $table->id();
             $table->string('title');
             $table->text('description')->nullable();
-            $table->foreignId('board_id')
-                ->constrained('boards')
-                ->onDelete('cascade'); // ✅ status vem daqui
-            $table->foreignId('user_id')
-                ->constrained('users')
-                ->onDelete('cascade');
-            $table->enum('priority', [1, 2, 3])->default(2); //1 = Alta, 2 = Média, 3 = Baixa
-            $table->date('due_date')->nullable();
+            $table->foreignId('board_id')->constrained('boards')->onDelete('cascade'); // relação natural
+            $table->foreignId('created_by')->constrained('users'); // quem criou
+            $table->foreignId('assigned_to')->nullable()->constrained('users'); // responsável
+            $table->enum('priority', [1, 2, 3])->default(2); // 1=Alta, 2=Média, 3=Baixa
+            $table->date('due_date')->nullable(); // data de vencimento
             $table->timestamps();
         });
     }
