@@ -20,7 +20,7 @@ class AuthController extends Controller
 
         $user = User::where('email', $request->email)->first();
 
-        if (! $user || ! Hash::check($request->password, $user->password)) {
+        if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json([
                 'message' => 'Invalid credentials.',
             ], 401);
@@ -37,7 +37,7 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
-        if (! $request->user()) {
+        if (!$request->user()) {
             return response()->json([
                 'message' => 'Unauthorized.'
             ], 401);

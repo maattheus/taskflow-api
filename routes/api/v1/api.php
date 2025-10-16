@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\v1\AuthController;
 use App\Http\Controllers\Api\v1\BoardController;
+use App\Http\Controllers\Api\v1\NotificationController;
 use App\Http\Controllers\Api\v1\ProjectController;
 use App\Http\Controllers\Api\v1\TaskController;
 use App\Http\Controllers\Api\v1\UserController;
@@ -46,5 +47,14 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('board/{boardId}', [TaskController::class, 'getAllByBoard']);
         Route::post('', [TaskController::class, 'create']);
         Route::put('{id}', [TaskController::class, 'update']);
+    });
+
+
+    Route::prefix('notifications')->group(function () {
+
+        Route::get('', [NotificationController::class, 'getByUser']);
+        Route::post('', [NotificationController::class, 'create']);
+        Route::post('{id}/read', [NotificationController::class, 'markAsRead']);
+
     });
 });
