@@ -55,12 +55,11 @@ class NotificationController extends Controller
             ]);
         } catch (\Exception $e) {
 
+            $status = $e->getCode() === 403 ? 403 : 500;
+
             return responseHandler([
-
-                'message' => 'There was an error marking the notification as read',
-                'status' => 500,
-                'data' => $e->getMessage()
-
+                'message' => $e->getMessage(),
+                'status' => $status
             ]);
         }
     }
@@ -85,6 +84,32 @@ class NotificationController extends Controller
                 'message' => 'There was an error creating the notification',
                 'status' => 500,
                 'data' => $e->getMessage()
+
+            ]);
+        }
+    }
+
+    public function delete($id)
+    {
+        try {
+
+            $this->notificationService->delete($id);
+
+            return responseHandler([
+
+                'message' => 'Notification deleted successfully',
+                'status' => 200,
+                'data' => null
+
+            ]);
+        } catch (\Exception $e) {
+
+            $status = $e->getCode() === 403 ? 403 : 500;
+
+            return responseHandler([
+
+                'message' => $e->getMessage(),
+                'status' => $status
 
             ]);
         }

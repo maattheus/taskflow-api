@@ -54,7 +54,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
         Route::get('', [NotificationController::class, 'getByUser']);
         Route::post('', [NotificationController::class, 'create']);
-        Route::post('{id}/read', [NotificationController::class, 'markAsRead']);
+        Route::patch('{id}/read', [NotificationController::class, 'markAsRead']);
+        Route::delete('{id}', [NotificationController::class, 'delete']);
 
     });
 });

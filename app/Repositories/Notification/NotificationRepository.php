@@ -34,4 +34,15 @@ class NotificationRepository implements NotificationInterface
         return $notification;
     }
 
+    public function delete($notificationId)
+    {
+        $notification = Notification::findOrFail($notificationId);
+        return $notification->delete();
+    }
+
+    public function find($notification)
+    {
+        return Notification::findOrFail($notification);
+    }
+
 }
