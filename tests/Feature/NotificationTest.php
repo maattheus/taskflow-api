@@ -5,93 +5,103 @@ namespace Tests\Feature;
 use App\Models\Notification;
 use App\Models\Task;
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
+use Tests\TestCase;
 
+class NotificationTest extends TestCase
+{
+    use RefreshDatabase;
 
-it('should fetch notifications for authenticated user', function () {
-    // Cria usuário fake
-    $user = User::factory()->create();
-
-    // Cria uma task associada (opcional, dependendo do relacionamento)
-    $task = Task::factory()->create([
-        'created_by' => $user->id
-    ]);
-
-    // Cria notificações associadas a esse usuário
-    Notification::factory()->count(3)->create([
-        'user_id' => $user->id,
-        'task_id' => $task->id,
-    ]);
-
-    // Simula que esse usuário já está autenticado com Sanctum
-    Sanctum::actingAs($user);
-
-    // Faz a requisição para buscar notificações
-    $response = $this->getJson('/api/v1/notifications');
-
-    // Verifica se retornou sucesso (200) e a estrutura esperada
-    $response->assertStatus(200)
-        ->assertJsonStructure([
-            'message',
-            'status',
-            'data' => [['id', 'user_id', 'task_id', 'message', 'read', 'created_at', 'updated_at']]
+    /** @test */
+    public function user_can_fetch_their_notifications()
+    {
+        $user = User::factory()->create();
+        $task = Task::factory()->create(['created_by' => $user->id]);
+        Notification::factory()->count(3)->create([
+            'user_id' => $user->id,
+            'task_id' => $task->id,
         ]);
-});
 
-it('should create a notification for a user', function () {
-    $user = User::factory()->create();
-    $task = Task::factory()->create();
-    Sanctum::actingAs($user);
+        Sanctum::actingAs($user);
 
-    $response = $this->postJson('/api/v1/notifications', [
-        'user_id' => $user->id,
-        'task_id' => $task->id,
-        'message' => 'Tarefa atualizada com sucesso.',
-    ]);
+        $response = $this->getJson('/api/v1/notifications');
 
-    $response->assertStatus(201)
-        ->assertJsonFragment(['message' => 'Tarefa atualizada com sucesso.']);
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'message',
+                'status',
+                'data' => [['id', 'user_id', 'task_id', 'message', 'read', 'created_at', 'updated_at']]
+            ]);
+    }
 
-    $this->assertDatabaseHas('notifications', [
-        'user_id' => $user->id,
-        'message' => 'Tarefa atualizada com sucesso.'
-    ]);
-});
+    /** @test */
+    public function user_can_create_a_notification()
+    {
+        $user = User::factory()->create();
+        $task = Task::factory()->create();
+        Sanctum::actingAs($user);
 
-it('should not allow a user to mark another user notification as read', function () {
-    $user = User::factory()->create();
-    $otherUser = User::factory()->create();
+        $response = $this->postJson('/api/v1/notifications', [
+            'user_id' => $user->id,
+            'task_id' => $task->id,
+            'message' => 'Tarefa atualizada com sucesso.',
+        ]);
 
-    $notification = Notification::factory()->create([
-        'user_id' => $otherUser->id,
-    ]);
+        $response->assertStatus(201)
+            ->assertJsonFragment(['message' => 'Tarefa atualizada com sucesso.']);
 
-    Sanctum::actingAs($user);
+        $this->assertDatabaseHas('notifications', [
+            'user_id' => $user->id,
+            'message' => 'Tarefa atualizada com sucesso.'
+        ]);
+    }
 
-    $response = $this->patchJson("/api/v1/notifications/{$notification->id}/read");
+    /** @test */
+    public function user_cannot_mark_others_notification_as_read()
+    {
+        $user = User::factory()->create();
+        $otherUser = User::factory()->create();
 
-    $response->assertStatus(403); // Forbidden
-});
+        $notification = Notification::factory()->create(['user_id' => $otherUser->id]);
 
+        Sanctum::actingAs($user);
 
-it('should delete a notification', function () {
-    $user = User::factory()->create();
-    $notification = Notification::factory()->create([
-        'user_id' => $user->id,
-    ]);
+        $response = $this->patchJson("/api/v1/notifications/{$notification->id}/read");
 
-    Sanctum::actingAs($user);
+        $response->assertStatus(403);
+    }
 
-    $response = $this->deleteJson("/api/v1/notifications/{$notification->id}");
+    /** @test */
+    public function user_can_delete_their_notification()
+    {
+        $user = User::factory()->create();
+        $notification = Notification::factory()->create(['user_id' => $user->id]);
 
-    $response->assertStatus(200);
-    $this->assertDatabaseMissing('notifications', ['id' => $notification->id]);
-});
+        Sanctum::actingAs($user);
 
-it('should require authentication to fetch notifications', function () {
-    $response = $this->getJson('/api/v1/notifications');
-    $response->assertStatus(401);
-});
+        $response = $this->deleteJson("/api/v1/notifications/{$notification->id}");
 
+        $response->assertStatus(200);
+        $this->assertDatabaseMissing('notifications', ['id' => $notification->id]);
+    }
 
+    /** @test */
+    public function authentication_is_required_to_access_notifications()
+    {
+        $response = $this->getJson('/api/v1/notifications');
+        $response->assertStatus(401);
 
+        $response = $this->postJson('/api/v1/notifications', [
+            'user_id' => 1,
+            'message' => 'Teste'
+        ]);
+        $response->assertStatus(401);
+
+        $response = $this->patchJson('/api/v1/notifications/1/read');
+        $response->assertStatus(401);
+
+        $response = $this->deleteJson('/api/v1/notifications/1');
+        $response->assertStatus(401);
+    }
+}

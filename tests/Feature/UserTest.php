@@ -1,80 +1,82 @@
 <?php
 
+namespace Tests\Feature;
+
 use App\Models\User;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
+use Tests\TestCase;
 
-/**
- * Testa a criação de usuário via API
- */
+class UserTest extends TestCase
+{
+    use RefreshDatabase;
 
-it('should create a user successfully', function () {
-    Sanctum::actingAs(User::factory()->create()); // Usuário autenticado
+    /** @test */
+    public function it_should_create_a_user_successfully()
+    {
+        Sanctum::actingAs(User::factory()->create()); // Usuário autenticado
 
-    $email = 'john' . time() . '@example.com';
+        $email = 'john' . time() . '@example.com';
+        $payload = [
+            'name' => 'John Doe',
+            'email' => $email,
+            'password' => 'password123'
+        ];
 
-    $payload = [
-        'name' => 'John Doe',
-        'email' => $email,
-        'password' => 'password123'
-    ];
+        $response = $this->postJson('/api/v1/users', $payload);
 
-    $response = $this->postJson('/api/v1/users', $payload);
+        $response->assertStatus(200)
+            ->assertJsonStructure(['message', 'status', 'data'])
+            ->assertJsonPath('message', 'User created successfully');
 
-    $response->assertStatus(200)
-        ->assertJsonStructure(['message', 'status', 'data'])
-        ->assertJsonPath('message', 'User created successfully');
+        $this->assertDatabaseHas('users', [
+            'email' => $email,
+        ]);
+    }
 
-    // Confirma que o usuário foi realmente criado no banco
-    $this->assertDatabaseHas('users', [
-        'email' => $email,
-    ]);
-});
+    /** @test */
+    public function it_should_update_a_user_successfully()
+    {
+        Sanctum::actingAs(User::factory()->create());
+        $user = User::factory()->create();
 
-/**
- * Testa atualização de usuário
- */
-it('should update a user successfully', function () {
-    Sanctum::actingAs(User::factory()->create()); // Usuário autenticado
-    $user = User::factory()->create();
+        $payload = ['name' => 'Updated Name'];
 
-    $payload = [
-        'name' => 'Updated Name',
-    ];
+        $response = $this->putJson("/api/v1/users/{$user->id}", $payload);
 
-    $response = $this->putJson("/api/v1/users/{$user->id}", $payload);
+        $response->assertStatus(200)
+            ->assertJsonPath('message', 'User updated successfully');
 
-    $response->assertStatus(200)
-        ->assertJsonPath('message', 'User updated successfully');
+        $this->assertDatabaseHas('users', [
+            'id' => $user->id,
+            'name' => 'Updated Name',
+        ]);
+    }
 
-    // Verifica se o nome foi alterado no banco
-    $this->assertDatabaseHas('users', [
-        'id' => $user->id,
-        'name' => 'Updated Name',
-    ]);
-});
+    /** @test */
+    public function it_should_fetch_user_by_id_successfully()
+    {
+        Sanctum::actingAs(User::factory()->create());
+        $user = User::factory()->create();
 
-/**
- * Testa a busca de usuário por ID
- */
-it('should fetch user by id successfully', function () {
-    Sanctum::actingAs(User::factory()->create()); // Usuário autenticado
-    $user = User::factory()->create();
+        $response = $this->getJson("/api/v1/users/{$user->id}");
 
-    $response = $this->getJson("/api/v1/users/{$user->id}");
+        $response->assertStatus(200)
+            ->assertJsonPath('message', 'User found successfully')
+            ->assertJsonStructure([
+                'message',
+                'status',
+                'data' => ['id', 'name', 'email', 'created_at', 'updated_at']
+            ]);
+    }
 
-    $response->assertStatus(200)
-        ->assertJsonPath('message', 'User found successfully')
-        ->assertJsonStructure(['message', 'status', 'data' => ['id', 'name', 'email', 'created_at', 'updated_at']]);
-});
+    /** @test */
+    public function it_should_return_401_if_not_authenticated()
+    {
+        $user = User::factory()->create();
 
-/**
- * Testa que o acesso sem autenticação retorna 401
- */
-it('should return 401 if not authenticated', function () {
-    $user = User::factory()->create();
+        $response = $this->getJson("/api/v1/users/{$user->id}");
 
-    // Tentando acessar sem token
-    $response = $this->getJson("/api/v1/users/{$user->id}");
-    $response->assertStatus(401);
-});
+        $response->assertStatus(401);
+    }
+}

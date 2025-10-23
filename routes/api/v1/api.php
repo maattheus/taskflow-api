@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\v1\AuthController;
 use App\Http\Controllers\Api\v1\BoardController;
 use App\Http\Controllers\Api\v1\NotificationController;
 use App\Http\Controllers\Api\v1\ProjectController;
+use App\Http\Controllers\Api\v1\ProjectUserController;
 use App\Http\Controllers\Api\v1\TaskController;
 use App\Http\Controllers\Api\v1\UserController;
 use Illuminate\Support\Facades\Route;
@@ -30,10 +31,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('projects')->group(function () {
 
         Route::get('', [ProjectController::class, 'getAllByUser']);
+        Route::get('{project}/members', [ProjectUserController::class, 'getMembers']);
 
         Route::middleware('admin')->group(function () {
             Route::post('', [ProjectController::class, 'create']);
             Route::put('{id}', [ProjectController::class, 'update']);
+            Route::post('{project}/members', [ProjectUserController::class, 'addMember']);
+            Route::delete('{project}/members', [ProjectUserController::class, 'removeMember']);
         });
     });
 

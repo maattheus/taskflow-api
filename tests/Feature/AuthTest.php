@@ -1,74 +1,100 @@
 <?php
 
+namespace Tests\Feature;
+
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Laravel\Sanctum\Sanctum;
+use Tests\TestCase;
 
-/**
- * Teste: login com credenciais válidas
- */
-it('should login successfully with valid credentials', function () {
-    // Cria um usuário fake no banco de testes com senha "password123" já hasheada
-    $user = User::factory()->create([
-        'password' => Hash::make('password123'),
-    ]);
+class AuthTest extends TestCase
+{
+    use RefreshDatabase;
 
-    // Faz a requisição de login para a API
-    $response = $this->postJson('/api/v1/auth/login', [
-        'email' => $user->email,
-        'password' => 'password123',
-    ]);
+    /** @test */
+    public function user_can_login_with_valid_credentials()
+    {
+        $user = User::factory()->create([
+            'password' => Hash::make('password123'),
+        ]);
 
-    // Verifica se deu sucesso (200) e se retornou as chaves "message" e "token"
-    $response->assertStatus(200)
-             ->assertJsonStructure(['message', 'token']);
-});
+        $response = $this->postJson('/api/v1/auth/login', [
+            'email' => $user->email,
+            'password' => 'password123',
+        ]);
 
-/**
- * Teste: login falha com senha incorreta
- */
-it('should fail login with wrong password', function () {
-    // Cria usuário com senha correta
-    $user = User::factory()->create([
-        'password' => Hash::make('password123'),
-    ]);
+        $response->assertStatus(200)
+            ->assertJsonStructure(['message', 'token']);
+    }
 
-    // Tenta logar com senha errada
-    $response = $this->postJson('/api/v1/auth/login', [
-        'email' => $user->email,
-        'password' => 'wrongpass',
-    ]);
+    /** @test */
+    public function login_fails_with_invalid_password()
+    {
+        $user = User::factory()->create([
+            'password' => Hash::make('password123'),
+        ]);
 
-    // Espera que a API retorne 401 (Unauthorized) e mensagem de erro
-    $response->assertStatus(401)
-             ->assertJson(['message' => 'Invalid credentials.']);
-});
+        $response = $this->postJson('/api/v1/auth/login', [
+            'email' => $user->email,
+            'password' => 'wrongpass',
+        ]);
 
-/**
- * Teste: logout funciona com token válido
- */
-it('should logout successfully with valid token', function () {
-    // Cria usuário fake
-    $user = User::factory()->create();
+        $response->assertStatus(401)
+            ->assertJson(['message' => 'Invalid credentials.']);
+    }
 
-    // Simula que esse usuário já está autenticado com Sanctum
-    Sanctum::actingAs($user);
+    /** @test */
+    public function login_fails_with_nonexistent_email()
+    {
+        $response = $this->postJson('/api/v1/auth/login', [
+            'email' => 'notfound@example.com',
+            'password' => 'any-password',
+        ]);
 
-    // Faz logout
-    $response = $this->postJson('/api/v1/auth/logout');
+        $response->assertStatus(401)
+            ->assertJson(['message' => 'Invalid credentials.']);
+    }
 
-    // Verifica se retornou sucesso (200) e a mensagem de logout
-    $response->assertStatus(200)
-             ->assertJson(['message' => 'User logout successfully']);
-});
+    /** @test */
+    public function login_fails_when_email_or_password_missing()
+    {
+        $response = $this->postJson('/api/v1/auth/login', [
+            'email' => 'user@example.com',
+            // senha ausente
+        ]);
 
-/**
- * Teste: logout sem token retorna erro
- */
-it('should return 401 if trying to logout without token', function () {
-    // Faz logout sem estar autenticado
-    $response = $this->postJson('/api/v1/auth/logout');
+        $response->assertStatus(422); // validação Laravel retorna 422
+    }
 
-    // Espera que a API bloqueie (401 Unauthorized)
-    $response->assertStatus(401);
-});
+    /** @test */
+    public function authenticated_user_can_logout()
+    {
+        $user = User::factory()->create();
+        Sanctum::actingAs($user);
+
+        $response = $this->postJson('/api/v1/auth/logout');
+
+        $response->assertStatus(200)
+            ->assertJson(['message' => 'User logout successfully']);
+    }
+
+    /** @test */
+    public function logout_fails_without_authentication()
+    {
+        $response = $this->postJson('/api/v1/auth/logout');
+        $response->assertStatus(401);
+    }
+
+    /** @test */
+    public function logout_fails_with_invalid_token()
+    {
+        // Faz a requisição com um token que não existe
+        $response = $this->postJson('/api/v1/auth/logout', [], [
+            'Authorization' => 'Bearer invalid_token'
+        ]);
+
+        $response->assertStatus(401);
+    }
+
+}

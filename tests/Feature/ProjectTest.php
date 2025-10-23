@@ -1,92 +1,103 @@
 <?php
 
+namespace Tests\Feature;
+
 use App\Models\User;
 use App\Models\Project;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
+use Tests\TestCase;
 
-// Teste para buscar projetos de um usuário autenticado
-it('should fetch projects for authenticated user', function () {
-    $user = User::factory()->create(['role' => 'member']);
+class ProjectTest extends TestCase
+{
+    use RefreshDatabase;
 
-    // Autentica o usuário
-    Sanctum::actingAs($user);
+    /** @test */
+    public function authenticated_user_can_fetch_their_projects()
+    {
+        $user = User::factory()->create(['role' => 'member']);
+        Project::factory()->count(3)->create(['user_id' => $user->id]);
 
-    // Cria alguns projetos para esse usuário
-    Project::factory()->count(3)->create(['user_id' => $user->id]);
+        Sanctum::actingAs($user);
 
-    $response = $this->getJson('/api/v1/projects');
+        $response = $this->getJson('/api/v1/projects');
 
-    $response->assertStatus(200)
-             ->assertJsonStructure([
-                 'message',
-                 'status',
-                 'data' => [['id', 'name', 'user_id', 'created_at', 'updated_at']],
-             ]);
-});
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'message',
+                'status',
+                'data' => [['id', 'name', 'user_id', 'created_at', 'updated_at']],
+            ]);
+    }
 
-// Teste: admin pode criar projeto
-it('should allow admin to create a project', function () {
-    $admin = User::factory()->create(['role' => 'admin']);
-    Sanctum::actingAs($admin);
+    /** @test */
+    public function admin_can_create_a_project()
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        Sanctum::actingAs($admin);
 
-    $response = $this->postJson('/api/v1/projects', [
-        'name' => 'New Project',
-    ]);
+        $response = $this->postJson('/api/v1/projects', [
+            'name' => 'New Project',
+        ]);
 
-    $response->assertStatus(200)
-             ->assertJson(['message' => 'Project created successfully']);
-});
+        $response->assertStatus(200)
+            ->assertJson(['message' => 'Project created successfully']);
+    }
 
-// Teste: usuário comum não pode criar projeto
-it('should block non-admin from creating a project', function () {
-    $user = User::factory()->create(['role' => 'member']);
-    Sanctum::actingAs($user);
+    /** @test */
+    public function non_admin_cannot_create_a_project()
+    {
+        $user = User::factory()->create(['role' => 'member']);
+        Sanctum::actingAs($user);
 
-    $response = $this->postJson('/api/v1/projects', [
-        'name' => 'New Project',
-    ]);
+        $response = $this->postJson('/api/v1/projects', [
+            'name' => 'New Project',
+        ]);
 
-    $response->assertStatus(403); // Bloqueio para não admin
-});
+        $response->assertStatus(403);
+    }
 
-// Teste: admin pode atualizar projeto
-it('should allow admin to update a project', function () {
-    $admin = User::factory()->create(['role' => 'admin']);
-    Sanctum::actingAs($admin);
+    /** @test */
+    public function admin_can_update_a_project()
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $project = Project::factory()->create();
+        Sanctum::actingAs($admin);
 
-    $project = Project::factory()->create();
+        $response = $this->putJson("/api/v1/projects/{$project->id}", [
+            'name' => 'Updated Project',
+        ]);
 
-    $response = $this->putJson("/api/v1/projects/{$project->id}", [
-        'name' => 'Updated Project',
-    ]);
+        $response->assertStatus(200)
+            ->assertJson(['message' => 'Project updated successfully']);
+    }
 
-    $response->assertStatus(200)
-             ->assertJson(['message' => 'Project updated successfully']);
-});
+    /** @test */
+    public function non_admin_cannot_update_a_project()
+    {
+        $user = User::factory()->create(['role' => 'member']);
+        $project = Project::factory()->create();
+        Sanctum::actingAs($user);
 
-// Teste: usuário comum não pode atualizar projeto
-it('should block non-admin from updating a project', function () {
-    $user = User::factory()->create(['role' => 'member']);
-    Sanctum::actingAs($user);
+        $response = $this->putJson("/api/v1/projects/{$project->id}", [
+            'name' => 'Updated Project',
+        ]);
 
-    $project = Project::factory()->create();
+        $response->assertStatus(403);
+    }
 
-    $response = $this->putJson("/api/v1/projects/{$project->id}", [
-        'name' => 'Updated Project',
-    ]);
+    /** @test */
+    public function unauthenticated_users_cannot_access_project_endpoints()
+    {
+        $project = Project::factory()->create();
 
-    $response->assertStatus(403);
-});
+        $response = $this->getJson('/api/v1/projects');
+        $response->assertStatus(401);
 
-// Teste: usuários não autenticados não podem acessar endpoints de projeto
-it('should block unauthenticated users from accessing project endpoints', function () {
-    $response = $this->getJson('/api/v1/projects');
-    $response->assertStatus(401);
+        $response = $this->postJson('/api/v1/projects', ['name' => 'Test']);
+        $response->assertStatus(401);
 
-    $response = $this->postJson('/api/v1/projects', ['name' => 'Test']);
-    $response->assertStatus(401);
-
-    $project = Project::factory()->create();
-    $response = $this->putJson("/api/v1/projects/{$project->id}", ['name' => 'Test']);
-    $response->assertStatus(401);
-});
+        $response = $this->putJson("/api/v1/projects/{$project->id}", ['name' => 'Test']);
+        $response->assertStatus(401);
+    }
+}

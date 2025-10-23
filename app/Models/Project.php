@@ -31,4 +31,16 @@ class Project extends Model
     {
         return $this->hasMany(Board::class);
     }
+
+    public function owner()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function members()
+    {
+        return $this->belongsToMany(User::class, 'project_user')
+            ->withTimestamps();
+    }
+
 }
