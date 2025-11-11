@@ -49,7 +49,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::prefix('tasks')->group(function () {
         Route::get('board/{boardId}', [TaskController::class, 'getAllByBoard']);
-        Route::post('', [TaskController::class, 'create']);
+        Route::post('', [TaskController::class, 'store']);
         Route::put('{id}', [TaskController::class, 'update']);
     });
 

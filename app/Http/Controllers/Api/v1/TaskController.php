@@ -2,73 +2,50 @@
 
 namespace App\Http\Controllers\Api\v1;
 
+use App\DTOs\MoveTaskDTO;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreTaskRequest;
+use App\Http\Requests\UpdateTaskRequest;
 use App\Services\TaskService;
+use App\DTOs\TaskDTO;
+use App\UseCases\Task\MoveTaskToBoard;
 use Illuminate\Http\Request;
 
 class TaskController extends Controller
 {
-    protected $taskService;
-
-    public function __construct(TaskService $taskService)
+    public function __construct(private TaskService $service)
     {
-        $this->taskService = $taskService;
     }
 
     public function getAllByBoard($boardId)
     {
-        try {
-            $tasks = $this->taskService->getAllByBoard($boardId);
-
-            return responseHandler([
-                'message' => 'Tasks fetched successfully',
-                'status' => 200,
-                'data' => $tasks,
-            ]);
-        } catch (\Exception $e) {
-            return responseHandler([
-                'message' => 'Error fetching tasks',
-                'status' => 500,
-                'error' => $e->getMessage(),
-            ]);
-        }
+        $tasks = $this->service->getAllByBoard($boardId);
+        return response()->json(['data' => $tasks], 200);
     }
 
-    public function create(Request $request)
+    public function store(StoreTaskRequest $request)
     {
-        try {
-            $task = $this->taskService->create($request);
-
-            return responseHandler([
-                'message' => 'Task created successfully',
-                'status' => 201,
-                'data' => $task,
-            ]);
-        } catch (\Exception $e) {
-            return responseHandler([
-                'message' => 'Error creating task',
-                'status' => 500,
-                'data' => $e->getMessage(),
-            ]);
-        }
+        $dto = TaskDTO::fromRequest($request);
+        $task = $this->service->create($dto);
+        return response()->json(['message' => 'Task created successfully', 'data' => $task], 201);
     }
 
-    public function update(Request $request, $id)
+    public function update(UpdateTaskRequest $request, $id)
     {
-        try {
-            $task = $this->taskService->update($request, $id);
-
-            return responseHandler([
-                'message' => 'Task updated successfully',
-                'status' => 200,
-                'data' => $task,
-            ]);
-        } catch (\Exception $e) {
-            return responseHandler([
-                'message' => 'Error updating task',
-                'status' => 500,
-                'error' => $e->getMessage(),
-            ]);
-        }
+        $dto = TaskDTO::fromRequest($request);
+        $task = $this->service->update($dto, $id);
+        return response()->json(['message' => 'Task updated successfully', 'data' => $task], 200);
     }
+
+    public function moveToBoard(Request $request, MoveTaskToBoard $useCase)
+    {
+        $dto = MoveTaskDTO::fromRequest($request);
+        $task = $useCase->execute($dto);
+
+        return response()->json([
+            'message' => 'Task moved successfully',
+            'data' => $task
+        ], 200);
+    }
+
 }

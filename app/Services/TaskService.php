@@ -2,29 +2,27 @@
 
 namespace App\Services;
 
-use App\Repositories\Task\TaskRepository;
+use App\DTOs\TaskDTO;
+use App\Repositories\Task\TaskInterface;
 
 class TaskService
 {
-    protected $taskRepository;
-
-    public function __construct(TaskRepository $taskRepository)
+    public function __construct(private TaskInterface $repository)
     {
-        $this->taskRepository = $taskRepository;
     }
 
-    public function getAllByBoard($boardId)
+    public function getAllByBoard(int $boardId)
     {
-        return $this->taskRepository->getAllByBoard($boardId);
+        return $this->repository->getAllByBoard($boardId);
     }
 
-    public function create($request)
+    public function create(TaskDTO $dto)
     {
-        return $this->taskRepository->create($request);
+        return $this->repository->createFromDto($dto);
     }
 
-    public function update($request, $id)
+    public function update(TaskDTO $dto, int $id)
     {
-        return $this->taskRepository->update($request, $id);
+        return $this->repository->updateFromDto($dto, $id);
     }
 }

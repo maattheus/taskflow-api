@@ -9,22 +9,29 @@ class BoardRepository implements BoardInterface
     public function getAllByProject($id)
     {
         return Board::where('project_id', $id)
-                        ->get( );
+            ->get();
     }
 
     public function create($data)
-    {   
+    {
 
         return Board::create($data->all());
 
-    }   
+    }
 
     public function update($data, $id)
-    {   
+    {
 
         $board = Board::find($id);
         $board->update($data->all());
         return $board;
 
     }
+
+    public function findById(int $id): ?Board
+    {
+        return Board::find($id);
+    }
+
+
 }

@@ -2,11 +2,15 @@
 
 namespace App\Repositories\Task;
 
+use App\DTOs\TaskDTO;
+use App\Models\Task;
+
 interface TaskInterface
 {
-    public function getAllByBoard($boardId);
+    public function getAllByBoard(int $boardId);
+    public function createFromDto(TaskDTO $dto);
+    public function updateFromDto(TaskDTO $dto, int $id);
+    public function findById(int $id);
+    public function save(Task $task);
 
-    public function create($params);
-
-    public function update($params, int $id);
 }
