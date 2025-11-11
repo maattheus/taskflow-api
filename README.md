@@ -1,7 +1,16 @@
 # 🧠 TaskFlow — arquitetura limpa com Laravel
 
-O **TaskFlow** é um projeto desenvolvido com foco em **boas práticas de arquitetura backend**, utilizando o framework **Laravel**.  
-A estrutura foi planejada para refletir padrões usados em sistemas de larga escala, garantindo **clareza, testabilidade e desacoplamento entre camadas**.
+O **TaskFlow** é um sistema de **gerenciamento de tarefas e boards** desenvolvido em **Laravel**, com foco em **organização de fluxos de trabalho e automação de tarefas internas.**
+O projeto simula a estrutura de um **sistema colaborativo de produtividade**, no estilo Trello ou ClickUp, com boards, tasks e movimentação entre etapas.
+
+Além da funcionalidade em si, o objetivo principal é demonstrar **boas práticas de arquitetura backend**, aplicando princípios de **Clean Architecture, SOLID e Domain-Driven Design (DDD)** para construir uma base sólida, escalável e de fácil manutenção.
+
+## 🎯 Objetivo do projeto
+
+-   Criar e gerenciar **boards** e **tasks** de forma organizada
+-   Permitir movimentação de tarefas entre boards
+-   Servir como exemplo **prático de arquitetura limpa** em Laravel
+-   Simular integrações e automações usadas em ambientes corporativos
 
 ---
 
