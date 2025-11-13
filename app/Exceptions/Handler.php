@@ -6,72 +6,97 @@ use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
-use Throwable;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Throwable;
 
 class Handler extends ExceptionHandler
 {
     /**
-     * Lista de exceções que não devem ser reportadas no log
+     * Exceptions that should not be reported.
      */
-    protected $dontReport = [
-        // Adicione exceções que não precisam de log, se quiser
-    ];
+    protected $dontReport = [];
 
     /**
-     * Registra callbacks para tratamento de exceções.
+     * Register reportable exceptions.
      */
     public function register(): void
     {
-        //
+        $this->reportable(function (Throwable $e) {
+            Log::channel('stack')->error('Unhandled exception', [
+                'exception' => get_class($e),
+                'message' => $e->getMessage(),
+                'url' => request()->fullUrl(),
+                'user_id' => auth()->id(),
+            ]);
+        });
     }
 
     /**
-     * Renderiza a resposta HTTP em formato JSON padronizado.
+     * Render a standardized JSON error response.
      */
     public function render($request, Throwable $e)
     {
-        // Se não for uma API, deixa o comportamento padrão
         if (!$request->expectsJson()) {
             return parent::render($request, $e);
         }
 
-        // Define estrutura base da resposta
+        $traceId = (string) Str::uuid();
+        $status = 500;
+
         $response = [
             'status' => 'error',
-            'trace_id' => Str::uuid()->toString(),
+            'trace_id' => $traceId,
         ];
 
-        // Define tipo de erro e mensagem
         if ($e instanceof ValidationException) {
-            $response['message'] = 'Validation failed.';
-            $response['errors'] = $e->errors();
             $status = 422;
+            $response += [
+                'error_code' => 'VALIDATION_FAILED',
+                'message' => 'The given data was invalid.',
+                'errors' => $e->errors(),
+            ];
         } elseif ($e instanceof AuthenticationException) {
-            $response['message'] = 'Unauthenticated.';
             $status = 401;
+            $response += [
+                'error_code' => 'UNAUTHENTICATED',
+                'message' => 'User is not authenticated.',
+            ];
         } elseif ($e instanceof ModelNotFoundException) {
-            $response['message'] = 'Resource not found.';
-            $response['error_code'] = 'NOT_FOUND';
             $status = 404;
+            $response += [
+                'error_code' => 'RESOURCE_NOT_FOUND',
+                'message' => 'The requested resource could not be found.',
+            ];
         } elseif ($e instanceof HttpException) {
-            $response['message'] = $e->getMessage() ?: 'HTTP error.';
             $status = $e->getStatusCode();
+            $response += [
+                'error_code' => 'HTTP_ERROR',
+                'message' => $e->getMessage() ?: 'An HTTP error occurred.',
+            ];
         } elseif ($e instanceof \DomainException) {
-            $response['message'] = $e->getMessage();
-            $response['error_code'] = 'DOMAIN_ERROR';
             $status = 400;
+            $response += [
+                'error_code' => 'DOMAIN_ERROR',
+                'message' => $e->getMessage(),
+            ];
         } else {
-            $response['message'] = 'Internal server error.';
-            $response['error_code'] = 'INTERNAL_ERROR';
-            $status = 500;
+            $response += [
+                'error_code' => 'INTERNAL_SERVER_ERROR',
+                'message' => 'An unexpected error occurred. Please try again later.',
+            ];
         }
 
-        // Loga com trace_id (útil pra rastrear erros em produção)
-        \Log::error($e->getMessage(), [
-            'trace_id' => $response['trace_id'],
-            'exception' => $e
+        // Centralized structured log
+        Log::channel('stack')->error($response['error_code'], [
+            'trace_id' => $traceId,
+            'exception' => get_class($e),
+            'message' => $e->getMessage(),
+            'user_id' => auth()->id(),
+            'url' => $request->fullUrl(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
         ]);
 
         return response()->json($response, $status);

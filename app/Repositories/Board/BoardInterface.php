@@ -2,13 +2,15 @@
 
 namespace App\Repositories\Board;
 
+use App\DTOs\BoardDTO;
+
 interface BoardInterface
 {
-    public function getAllByProject($id);
+    public function getByProject($id);
 
-    public function create($data);
+    public function createFromDto(BoardDTO $data);
 
-    public function update($id, $data);
+    public function updateFromDto(BoardDTO $data, int $id);
 
     public function findById(int $id);
 

@@ -30,7 +30,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::prefix('projects')->group(function () {
 
-        Route::get('', [ProjectController::class, 'getAllByUser']);
+        Route::get('', [ProjectController::class, 'getByUser']);
         Route::get('{project}/members', [ProjectUserController::class, 'getMembers']);
 
         Route::middleware('admin')->group(function () {
@@ -42,13 +42,13 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     Route::prefix('boards')->group(function () {
-        Route::get('{id}', [BoardController::class, 'getAllByProject']);
-        Route::post('', [BoardController::class, 'create']);
+        Route::get('{id}', [BoardController::class, 'getByProject']);
+        Route::post('', [BoardController::class, 'store']);
         Route::put('{id}', [BoardController::class, 'update']);
     });
 
     Route::prefix('tasks')->group(function () {
-        Route::get('board/{boardId}', [TaskController::class, 'getAllByBoard']);
+        Route::get('board/{boardId}', [TaskController::class, 'getByBoard']);
         Route::post('', [TaskController::class, 'store']);
         Route::put('{id}', [TaskController::class, 'update']);
     });

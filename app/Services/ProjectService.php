@@ -2,41 +2,70 @@
 
 namespace App\Services;
 
-use App\Repositories\Project\ProjectRepository;
+use App\DTOs\ProjectDTO;
+use App\Repositories\Project\ProjectInterface;
+use Illuminate\Support\Facades\Log;
 
 class ProjectService
 {
 
-    private $projectRepo;
+    public function __construct(private ProjectInterface $repository)
+    {
+    }
 
-    public function __construct(ProjectRepository $projectRepo)
+    public function create(ProjectDTO $data)
     {
 
-        $this->projectRepo = $projectRepo;
+        try {
+
+            return $this->repository->create($data);
+
+        } catch (\Throwable $e) {
+            Log::channel('project')->error('Error creating a project.', [
+                'message' => $e->getMessage(),
+                'user_id' => auth()->id(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw $e;
+        }
 
     }
 
-    public function create($data)
+    public function update(ProjectDTO $data, $id)
     {
+        try {
 
-        return $this->projectRepo->create($data);
+            return $this->repository->update($data, $id);
+        } catch (\Throwable $e) {
+            Log::channel('project')->error('Error updating a project.', [
+                'message' => $e->getMessage(),
+                'project_id' => $id,
+                'user_id' => auth()->id(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw $e;
+        }
+
 
     }
 
 
-    public function getAllByUser()
+    public function getByUser()
     {
 
-        return $this->projectRepo->getAllByUser();
+        try {
+
+            return $this->repository->getByUser();
+
+        } catch (\Throwable $e) {
+            Log::channel('project')->error('Error retrieving projects for the user.', [
+                'message' => $e->getMessage(),
+                'user_id' => auth()->id(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw $e;
+        }
 
     }
-
-    public function update($data, $id)
-    {
-
-        return $this->projectRepo->update($data, $id);
-
-    }
-
 
 }

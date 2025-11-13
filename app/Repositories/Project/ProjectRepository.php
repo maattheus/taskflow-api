@@ -2,6 +2,7 @@
 
 namespace App\Repositories\Project;
 
+use App\DTOs\ProjectDTO;
 use App\Models\Project;
 use App\Repositories\Project\ProjectInterface;
 use Illuminate\Support\Facades\Auth;
@@ -9,25 +10,17 @@ use Illuminate\Support\Facades\Auth;
 class ProjectRepository implements ProjectInterface
 {
 
-    public function create($params)
+    public function create(ProjectDTO $dto)
     {
-
-        $params = (Object) $params;
-
-        $project = new Project();
-
-        $project->name = $params->name;
-        $project->user_id   = Auth::id();
-        $project->description  = $params->description;
-
-        $project->save();
-
-        return $project;
-  
+        return Project::create([
+            'name' => $dto->name,
+            'description' => $dto->description,
+            'user_id' => Auth::id(),
+        ]);
     }
 
 
-    public function getAllByUser()
+    public function getByUser()
     {
 
         return Project::where('user_id', Auth::id())->get();
@@ -38,35 +31,22 @@ class ProjectRepository implements ProjectInterface
     public function getProjectById($id)
     {
 
-        return Project::findOrFail($id); 
+        return Project::findOrFail($id);
 
     }
 
-    public function update($data, $id)
+    public function update(ProjectDTO $dto, int $id)
     {
-
-        $data = (Object) $data;
-
         $project = Project::findOrFail($id);
 
-        if(isset($data->name))
-        {
+        $updateData = array_filter([
+            'name' => $dto->name,
+            'description' => $dto->description,
+        ], fn($value) => !is_null($value));
 
-            $project->name = $data->name;
+        $project->update($updateData);
 
-        }
-
-        if(isset($data->description))
-        {
-
-            $project->description = $data->description;
-
-        }
-
-        $project->save();
-
-        return $project;
-
+        return $project->fresh();
     }
 
 }

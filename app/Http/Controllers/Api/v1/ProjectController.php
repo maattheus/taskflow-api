@@ -2,94 +2,48 @@
 
 namespace App\Http\Controllers\Api\v1;
 
+use App\DTOs\ProjectDTO;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreProjectRequest;
+use App\Http\Requests\UpdateProjectRequest;
 use App\Services\ProjectService;
 use Illuminate\Http\Request;
 
 class ProjectController extends Controller
 {
 
-    private $projectService;
-
-    public function __construct(ProjectService $projectService)
+    public function __construct(private ProjectService $service)
     {
-
-        $this->projectService = $projectService;
     }
 
-    public function create(Request $request)
+    public function create(StoreProjectRequest $request)
     {
-        try {
 
-            $project = $this->projectService->create($request);
+        $dto = ProjectDTO::fromRequest($request);
+        $project = $this->service->create($dto);
 
-            return responseHandler([
+        return response()->json(['message' => 'Project created successfully', 'data' => $project], 201);
 
-                'message' => 'Project created successfully',
-                'status'  => 200,
-                'data'    => $project
-
-            ]);
-        } catch (\Exception $e) {
-
-            return responseHandler([
-
-                'message' => 'There was an error creating the project',
-                'status'  => 500,
-                'data'    => $e->getMessage()
-
-            ]);
-        }
     }
 
 
-    public function getAllByUser(Request $request)
+    public function getByUser(Request $request)
     {
-        try {
 
-            $project = $this->projectService->getAllByUser();
+        $project = $this->service->getByUser();
 
-            return responseHandler([
+        return response()->json(['message' => 'Projects found successfully', 'data' => $project], 200);
 
-                'message' => 'Projects found successfully',
-                'status'  => 200,
-                'data'    => $project
 
-            ]);
-        } catch (\Exception $e) {
-
-            return responseHandler([
-
-                'message' => 'An error occurred when searching for user projects',
-                'status'  => 500,
-                'data'    => $e->getMessage()
-
-            ]);
-        }
     }
 
-    public function update(Request $request, $id)
+    public function update(UpdateProjectRequest $request, $id)
     {
-        try {
 
-            $project = $this->projectService->update($request, $id);
+        $dto = ProjectDTO::fromRequest($request);
+        $project = $this->service->update($dto, $id);
 
-            return responseHandler([
+        return response()->json(['message' => 'Project updated successfully', 'data' => $project], 200);
 
-                'message' => 'Project updated successfully',
-                'status'  => 200,
-                'data'    => $project
-
-            ]);
-        } catch (\Exception $e) {
-
-            return responseHandler([
-
-                'message' => 'There was an error updating the project',
-                'status'  => 500,
-                'data'    => $e->getMessage()
-
-            ]);
-        }
     }
 }

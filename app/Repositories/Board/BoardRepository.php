@@ -2,28 +2,39 @@
 
 namespace App\Repositories\Board;
 
+use App\DTOs\BoardDTO;
 use App\Models\Board;
 
 class BoardRepository implements BoardInterface
 {
-    public function getAllByProject($id)
+    public function getByProject($id)
     {
         return Board::where('project_id', $id)
             ->get();
     }
 
-    public function create($data)
+    public function createFromDto(BoardDTO $data)
     {
 
-        return Board::create($data->all());
+        $board = new Board();
+        $board->fill([
+            'name' => $data->name,
+            'project_id' => $data->project_id,
+        ]);
+
+        $board->save();
+        return $board;
 
     }
 
-    public function update($data, $id)
+    public function updateFromDto(BoardDTO $data, int $id)
     {
 
-        $board = Board::find($id);
-        $board->update($data->all());
+        $board = Board::findOrFail($id);
+        $board->fill([
+            'name' => $data->name ?? $board->name
+        ]);
+
         return $board;
 
     }

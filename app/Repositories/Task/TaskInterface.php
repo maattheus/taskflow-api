@@ -7,7 +7,7 @@ use App\Models\Task;
 
 interface TaskInterface
 {
-    public function getAllByBoard(int $boardId);
+    public function getByBoard(int $boardId);
     public function createFromDto(TaskDTO $dto);
     public function updateFromDto(TaskDTO $dto, int $id);
     public function findById(int $id);

@@ -89,7 +89,7 @@ return [
             'handler_with' => [
                 'host' => env('PAPERTRAIL_URL'),
                 'port' => env('PAPERTRAIL_PORT'),
-                'connectionString' => 'tls://'.env('PAPERTRAIL_URL').':'.env('PAPERTRAIL_PORT'),
+                'connectionString' => 'tls://' . env('PAPERTRAIL_URL') . ':' . env('PAPERTRAIL_PORT'),
             ],
             'processors' => [PsrLogMessageProcessor::class],
         ],
@@ -126,6 +126,27 @@ return [
         'emergency' => [
             'path' => storage_path('logs/laravel.log'),
         ],
+        'task' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/task/task.log'),
+            'level' => 'error',
+            'days' => 14, // mantém logs dos últimos 14 dias
+        ],
+
+        'board' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/board/board.log'),
+            'level' => 'error',
+            'days' => 14,
+        ],
+
+        'project' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/project/project.log'),
+            'level' => 'error',
+            'days' => 14,
+        ],
+
     ],
 
 ];

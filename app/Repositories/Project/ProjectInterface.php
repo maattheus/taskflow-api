@@ -2,16 +2,18 @@
 
 namespace App\Repositories\Project;
 
+use App\DTOs\ProjectDTO;
+
 
 interface ProjectInterface
 {
 
-    public function create($params);
+    public function create(ProjectDTO $data);
 
-    public function getAllByUser();
+    public function getByUser();
 
-    public function getProjectById($id);
+    public function getProjectById(int $id);
 
-    public function update($data, $id);
+    public function update(ProjectDTO $data, int $id);
 
 }

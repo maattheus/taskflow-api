@@ -18,8 +18,8 @@ class UpdateTaskRequest extends FormRequest
             'description' => 'sometimes|nullable|string',
             'board_id' => 'sometimes|integer|exists:boards,id',
             'assigned_to' => 'sometimes|nullable|integer|exists:users,id',
-            'priority' => 'sometimes|string|in:low,medium,high',
-            'due_date' => 'sometimes|date',
+            'priority' => 'sometimes|integer|in:1,2,3',
+            'due_date' => 'sometimes|nullable|date',
         ];
     }
 }

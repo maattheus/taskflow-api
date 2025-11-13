@@ -2,92 +2,47 @@
 
 namespace App\Http\Controllers\Api\v1;
 
+use App\DTOs\BoardDTO;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreBoardRequest;
+use App\Http\Requests\UpdateBoardRequest;
 use App\Services\BoardService;
 use Illuminate\Http\Request;
 
 class BoardController extends Controller
 {
-    protected $boardService;
-
-    public function __construct(BoardService $boardService)
+    public function __construct(private BoardService $service)
     {
-        $this->boardService = $boardService;
     }
 
-    public function getAllByProject(Request $request)
+    public function getByProject(Request $request)
     {
-        try {
+        $boards = $this->service->getByProject($request->id);
 
-            $boards = $this->boardService->getAllByProject($request->id);
+        return response()->json(['message' => 'Board retrieved successfully', 'data' => $boards], 200);
 
-            return responseHandler([
-
-                'data' => $boards,
-                'message' => 'Boards fetched successfully',
-                'status' => 200
-
-            ]);
-        } catch (\Exception $e) {
-
-            return responseHandler([
-
-                'message' => 'Error fetching boards',
-                'status' => 500,
-                'error' => $e->getMessage()
-
-            ]);
-        }
     }
 
-    public function create(Request $request)
+    public function store(StoreBoardRequest $request)
     {
-        try {
+        $dto = BoardDTO::fromRequest($request);
+        $board = $this->service->create($dto);
 
-            $board = $this->boardService->create($request);
-
-            return responseHandler([
-
-                'data' => $board,
-                'message' => 'Board created successfully',
-                'status' => 201
-
-            ]);
-        } catch (\Exception $e) {
-
-            return responseHandler([
-
-                'message' => 'Error creating board',
-                'status' => 500,
-                'error' => $e->getMessage()
-
-            ]);
-        }
+        return response()->json([
+            'message' => 'Board created successfully',
+            'data' => $board
+        ], 201);
     }
 
-    public function update(Request $request, $id)
+
+    public function update(UpdateBoardRequest $request, $id)
     {
 
-        try {
+        $dto = BoardDTO::fromRequest($request);
+        $board = $this->service->update($dto, $id);
 
-            $board = $this->boardService->update($request, $id);
+        return response()->json(['message' => 'Board updated successfully', 'data' => $board], 200);
 
-            return responseHandler([
 
-                'data' => $board,
-                'message' => 'Board updated successfully',
-                'status' => 200
-
-            ]);
-        } catch (\Exception $e) {
-
-            return responseHandler([
-
-                'message' => 'Error updating board',
-                'status' => 500,
-                'error' => $e->getMessage()
-
-            ]);
-        }
     }
 }

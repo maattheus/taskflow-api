@@ -18,7 +18,7 @@ class StoreTaskRequest extends FormRequest
             'description' => 'nullable|string',
             'board_id' => 'required|integer|exists:boards,id',
             'assigned_to' => 'nullable|integer|exists:users,id',
-            'priority' => 'nullable|string|in:low,medium,high',
+            'priority' => 'nullable|integer|in:1,2,3',
             'due_date' => 'nullable|date',
         ];
     }

@@ -17,9 +17,9 @@ class TaskController extends Controller
     {
     }
 
-    public function getAllByBoard($boardId)
+    public function getByBoard($boardId)
     {
-        $tasks = $this->service->getAllByBoard($boardId);
+        $tasks = $this->service->getByBoard($boardId);
         return response()->json(['data' => $tasks], 200);
     }
 

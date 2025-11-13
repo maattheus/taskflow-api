@@ -29,11 +29,10 @@ class BoardTest extends TestCase
         $response = $this->getJson("/api/v1/boards/{$project->id}");
 
         $response->assertStatus(200)
-                 ->assertJsonStructure([
-                     'message',
-                     'status',
-                     'data' => [['id', 'name', 'project_id', 'created_at', 'updated_at']]
-                 ]);
+            ->assertJsonStructure([
+                'message',
+                'data' => [['id', 'name', 'project_id', 'created_at', 'updated_at']]
+            ]);
     }
 
     /** @test */
@@ -49,8 +48,13 @@ class BoardTest extends TestCase
             'project_id' => $project->id
         ]);
 
-        $response->assertStatus(201)
-                 ->assertJsonPath('message', 'Board created successfully');
+        $response->assertCreated(); //201 status code
+        $response->assertJsonStructure([
+            'message',
+            'data' => [['id', 'name', 'project_id', 'created_at', 'updated_at']]
+        ]);
+
+
     }
 
     /** @test */
@@ -67,7 +71,7 @@ class BoardTest extends TestCase
         ]);
 
         $response->assertStatus(200)
-                 ->assertJsonPath('message', 'Board updated successfully');
+            ->assertJsonPath('message', 'Board updated successfully');
     }
 
     /** @test */
