@@ -17,7 +17,7 @@ Route::prefix('auth')->group(function () {
 
 Route::prefix('users')->group(function () {
 
-    Route::post('', [UserController::class, 'create']);
+    Route::post('', [UserController::class, 'store']);
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::get('/{id}', [UserController::class, 'getUserById']);
@@ -34,7 +34,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('{project}/members', [ProjectUserController::class, 'getMembers']);
 
         Route::middleware('admin')->group(function () {
-            Route::post('', [ProjectController::class, 'create']);
+            Route::post('', [ProjectController::class, 'store']);
             Route::put('{id}', [ProjectController::class, 'update']);
             Route::post('{project}/members', [ProjectUserController::class, 'addMember']);
             Route::delete('{project}/members', [ProjectUserController::class, 'removeMember']);
@@ -56,10 +56,11 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::prefix('notifications')->group(function () {
 
-        Route::get('', [NotificationController::class, 'getByUser']);
-        Route::post('', [NotificationController::class, 'create']);
+        Route::get('', [NotificationController::class, 'getAll']);
+        Route::post('', [NotificationController::class, 'store']);
         Route::patch('{id}/read', [NotificationController::class, 'markAsRead']);
         Route::delete('{id}', [NotificationController::class, 'delete']);
+        Route::get('/unread', [NotificationController::class, 'getUnread']);
 
     });
 });

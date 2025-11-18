@@ -2,13 +2,15 @@
 
 namespace App\Repositories\User;
 
+use App\DTOs\UserDTO;
+
 interface UserInterface
 {
 
-    public function create($data);
+    public function create(UserDTO $data);
 
-    public function getUserById($id);
+    public function getUserById(int $id);
 
-    public function update($data, $id);
+    public function update(UserDTO $data, int $id);
 
 }

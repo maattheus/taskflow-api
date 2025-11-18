@@ -2,32 +2,39 @@
 
 namespace App\Repositories\User;
 
+use App\DTOs\UserDTO;
 use App\Models\User;
 
 class UserRepository implements UserInterface
 {
-
-    public function create($data)
+    public function create(UserDTO $dto)
     {
-
-        return User::create($data);
-  
+        return User::create([
+            'name' => $dto->name,
+            'email' => $dto->email,
+            'password' => bcrypt($dto->password),
+            'role' => $dto->role ?? 'member',
+        ]);
     }
 
-
-    public function getUserById($id)
+    public function getUserById(int $id)
     {
-
-        return User::findOrFail($id); 
-
+        return User::findOrFail($id);
     }
 
-
-    public function update($data, $id)
+    public function update(UserDTO $dto, int $id)
     {
         $user = User::findOrFail($id);
-        $user->update($data);
+
+        $user->fill([
+            'name' => $dto->name ?? $user->name,
+            'email' => $dto->email ?? $user->email,
+            'password' => $dto->password ? bcrypt($dto->password) : $user->password,
+            'role' => $dto->role ?? $user->role,
+        ]);
+
+        $user->save();
+
         return $user;
     }
-
 }

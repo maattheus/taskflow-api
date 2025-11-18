@@ -2,47 +2,48 @@
 
 namespace App\Repositories\Notification;
 
+use App\DTOs\NotificationDTO;
 use App\Models\Notification;
-use Illuminate\Support\Facades\Auth;
 
 class NotificationRepository implements NotificationInterface
 {
-
-    public function getByUser()
+    public function create(NotificationDTO $dto)
     {
-        return Notification::where('user_id', Auth::id())->get();
+        return Notification::create([
+            'user_id' => $dto->user_id,
+            'task_id' => $dto->task_id,
+            'message' => $dto->message,
+            'read' => false,
+        ]);
     }
 
-    public function markAsRead($notificationId)
+    public function getUnreadByUser(int $userId)
     {
-        $notification = Notification::findOrFail($notificationId);
+        return Notification::where('user_id', $userId)
+            ->where('read', false)
+            ->get();
+    }
+
+    public function markAsRead(int $id)
+    {
+        $notification = Notification::findOrFail($id);
         $notification->read = true;
         $notification->save();
 
         return $notification;
     }
 
-    public function create($userId, $request)
+    public function getAllByUser(int $userId)
     {
-        $notification = new Notification();
-        $notification->user_id = $userId;
-        $notification->message = $request->message;
-        $notification->task_id = $request->task_id ?? null;
-        $notification->read = false;
-        $notification->save();
-
-        return $notification;
+        return Notification::where('user_id', $userId)
+            ->orderBy('created_at', 'desc')
+            ->get();
     }
 
-    public function delete($notificationId)
+    public function delete(int $id)
     {
-        $notification = Notification::findOrFail($notificationId);
-        return $notification->delete();
+        $notification = Notification::findOrFail($id);
+        $notification->delete();
+        return true;
     }
-
-    public function find($notification)
-    {
-        return Notification::findOrFail($notification);
-    }
-
 }

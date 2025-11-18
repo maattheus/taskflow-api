@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers\Api\v1;
 
+use App\DTOs\UserDTO;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\CreateUserRequest;
+use App\Http\Requests\StoreUserRequest;
+use App\Http\Requests\UpdateUserRequest;
 use App\Services\UserService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Http\Request;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
@@ -14,89 +15,37 @@ class UserController extends Controller
 {
 
     use HasApiTokens, HasFactory, Notifiable;
-    private $userService;
 
-    public function __construct(UserService $userService)
+    public function __construct(private UserService $service)
     {
-
-        $this->userService = $userService;
     }
 
-    public function create(CreateUserRequest $request)
+    public function store(StoreUserRequest $request)
     {
 
-        try {
+        $dto = UserDTO::fromRequest($request);
+        $user = $this->service->store($dto);
 
-            $data = $request->validated();
+        return response()->json(['message' => 'User created successfully', 'data' => $user], 201);
 
-            $user = $this->userService->create($data);
-
-            return responseHandler([
-
-                'message' => 'User created successfully',
-                'status'  => 200,
-                'data'    => $user
-
-            ]);
-        } catch (\Exception $e) {
-
-            return responseHandler([
-
-                'message' => 'There was an error creating the user',
-                'status'  => 500,
-                'data'    => $e->getMessage()
-
-            ]);
-        }
     }
 
 
-    public function update(Request $request, $id)
+    public function update(UpdateUserRequest $request, $id)
     {
 
-        try {
+        $dto = UserDTO::fromRequest($request);
+        $user = $this->service->update($dto, $id);
 
-            $user = $this->userService->update($request->all(), $id);
-
-            return responseHandler([
-
-                'message' => 'User updated successfully',
-                'status'  => 200,
-                'data'    => $user
-
-            ]);
-        } catch (\Exception $e) {
-
-            return responseHandler([
-
-                'message' => 'There was an error updating the user',
-                'status'  => 500,
-                'data'    => $e->getMessage()
-
-            ]);
-        }
+        return response()->json(['message' => 'User updated successfully', 'data' => $user], 201);
     }
 
 
-    public function getUserById($id)
+    public function getUserById(int $id)
     {
 
-        try {
+        $user = $this->service->getUserById($id);
 
-            $user = $this->userService->getUserById($id);
-
-            return responseHandler([
-                'message' => 'User found successfully',
-                'status'  => 200,
-                'data'    => $user
-            ]);
-        } catch (\Exception $e) {
-
-            return responseHandler([
-                'message' => 'There was an error fetching the user',
-                'status'  => 500,
-                'data'    => $e->getMessage()
-            ]);
-        }
+        return response()->json(['message' => 'User found successfully', 'data' => $user], 201);
     }
 }

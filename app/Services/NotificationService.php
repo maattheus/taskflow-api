@@ -2,60 +2,72 @@
 
 namespace App\Services;
 
-use App\Repositories\Notification\NotificationRepository;
-use Auth;
-use Exception;
+use App\DTOs\NotificationDTO;
+use App\Repositories\Notification\NotificationInterface;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class NotificationService
 {
-    protected $notificationRepository;
-
-    public function __construct(NotificationRepository $notificationRepository)
+    public function __construct(private NotificationInterface $repository)
     {
-        $this->notificationRepository = $notificationRepository;
     }
 
-
-    public function getByUser()
+    public function create(NotificationDTO $dto)
     {
-        return $this->notificationRepository->getByUser();
+        try {
+            return $this->repository->create($dto);
+        } catch (\Throwable $e) {
+            Log::channel('notification')->error('Error creating notification.', [
+                'trace_id' => Str::uuid()->toString(),
+                'message' => $e->getMessage(),
+                'task_id' => $dto->task_id,
+                'user_id' => $dto->user_id,
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw $e;
+        }
     }
 
-    public function markAsRead($notificationId)
+    public function getUnread(int $userId)
     {
-
-        $notification = $this->notificationRepository->find($notificationId);
-
-        if (!$notification) {
-            throw new Exception('Notification not found');
-        }
-
-        if ($notification->user_id !== Auth::id()) {
-            throw new Exception('Forbidden', 403);
-        }
-
-        return $this->notificationRepository->markAsRead($notification);
+        return $this->repository->getUnreadByUser($userId);
     }
 
-    public function create($userId, $request)
+    public function markAsRead(int $id)
     {
-        return $this->notificationRepository->create($userId, $request);
+        return $this->repository->markAsRead($id);
     }
 
-    public function delete($notificationId)
+    public function getAllByUser(int $userId)
     {
-
-        $notification = $this->notificationRepository->find($notificationId);
-
-        if (!$notification) {
-            throw new Exception('Notification not found');
+        try {
+            return $this->repository->getAllByUser($userId);
+        } catch (\Throwable $e) {
+            Log::channel('notification')->error('Error fetching notifications.', [
+                'trace_id' => Str::uuid()->toString(),
+                'message' => $e->getMessage(),
+                'user_id' => $userId,
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw $e;
         }
+    }
 
-        if ($notification->user_id !== Auth::id()) {
-            throw new Exception('Forbidden', 403);
+    public function delete(int $id)
+    {
+        try {
+            return $this->repository->delete($id);
+        } catch (\Throwable $e) {
+            Log::channel('notification')->error('Error deleting notification.', [
+                'trace_id' => Str::uuid()->toString(),
+                'message' => $e->getMessage(),
+                'notification_id' => $id,
+                'user_id' => auth()->id(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw $e;
         }
-
-        return $this->notificationRepository->delete($notificationId);
     }
 
 }

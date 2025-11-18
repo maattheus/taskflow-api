@@ -26,6 +26,16 @@ class AppServiceProvider extends ServiceProvider
             \App\Repositories\Project\ProjectRepository::class
         );
 
+        $this->app->bind(
+            \App\Repositories\User\UserInterface::class,
+            \App\Repositories\User\UserRepository::class
+        );
+
+        $this->app->bind(
+            \App\Repositories\Notification\NotificationInterface::class,
+            \App\Repositories\Notification\NotificationRepository::class
+        );
+
     }
 
     /**

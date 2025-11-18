@@ -2,117 +2,57 @@
 
 namespace App\Http\Controllers\Api\v1;
 
+use App\DTOs\NotificationDTO;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreNotificationRequest;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
 
 class NotificationController extends Controller
 {
-    protected $notificationService;
-
-    public function __construct(NotificationService $notificationService)
+    public function __construct(private NotificationService $service)
     {
-        $this->notificationService = $notificationService;
     }
 
-    public function getByUser()
+    public function store(StoreNotificationRequest $request)
     {
-        try {
+        $dto = NotificationDTO::fromRequest($request);
+        $notification = $this->service->create($dto);
 
-            $notifications = $this->notificationService->getByUser();
+        return response()->json(['message' => 'Notification created', 'data' => $notification], 201);
+    }
 
-            return responseHandler([
+    public function getUnread()
+    {
+        $notifications = $this->service->getUnread(auth()->id());
 
-                'message' => 'Notifications retrieved successfully',
-                'status' => 200,
-                'data' => $notifications
-
-            ]);
-        } catch (\Exception $e) {
-
-            return responseHandler([
-
-                'message' => 'There was an error creating the notification',
-                'status' => 500,
-                'data' => $e->getMessage()
-
-            ]);
-        }
+        return response()->json(['message' => 'Unread notifications fetched', 'data' => $notifications], 200);
     }
 
     public function markAsRead($id)
     {
-        try {
+        $notification = $this->service->markAsRead($id);
 
-            $notification = $this->notificationService->markAsRead($id);
-
-            return responseHandler([
-
-                'message' => 'Notification marked as read successfully',
-                'status' => 200,
-                'data' => $notification
-
-            ]);
-        } catch (\Exception $e) {
-
-            $status = $e->getCode() === 403 ? 403 : 500;
-
-            return responseHandler([
-                'message' => $e->getMessage(),
-                'status' => $status
-            ]);
-        }
+        return response()->json(['message' => 'Notification marked as read', 'data' => $notification], 200);
     }
 
-    public function create(Request $request)
+    public function getAll()
     {
-        try {
+        $notifications = $this->service->getAllByUser(auth()->id());
 
-            $notification = $this->notificationService->create($request->user()->id, $request);
-
-            return responseHandler([
-
-                'message' => 'Notification created successfully',
-                'status' => 201,
-                'data' => $notification
-
-            ]);
-        } catch (\Exception $e) {
-
-            return responseHandler([
-
-                'message' => 'There was an error creating the notification',
-                'status' => 500,
-                'data' => $e->getMessage()
-
-            ]);
-        }
+        return response()->json([
+            'message' => 'Notifications fetched successfully.',
+            'data' => $notifications
+        ], 200);
     }
 
-    public function delete($id)
+    public function destroy($id)
     {
-        try {
+        $deleted = $this->service->delete($id);
 
-            $this->notificationService->delete($id);
-
-            return responseHandler([
-
-                'message' => 'Notification deleted successfully',
-                'status' => 200,
-                'data' => null
-
-            ]);
-        } catch (\Exception $e) {
-
-            $status = $e->getCode() === 403 ? 403 : 500;
-
-            return responseHandler([
-
-                'message' => $e->getMessage(),
-                'status' => $status
-
-            ]);
-        }
+        return response()->json([
+            'message' => 'Notification deleted successfully.',
+            'deleted' => $deleted
+        ], 200);
     }
-
 }

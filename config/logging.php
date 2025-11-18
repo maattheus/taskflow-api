@@ -147,6 +147,20 @@ return [
             'days' => 14,
         ],
 
+        'user' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/user/user.log'),
+            'level' => 'error',
+            'days' => 14,
+        ],
+
+        'notification' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/notification/notification.log'),
+            'level' => 'error',
+            'days' => 14,
+        ],
+
     ],
 
 ];
